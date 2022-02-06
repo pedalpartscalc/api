@@ -43,3 +43,36 @@ pub fn create_example_parts_list() -> PartsMap {
     ]);
     return example_parts;
 }
+
+pub fn has_sufficient_parts(available_parts: PartsMap, required_parts: PartsMap) -> bool {
+    // TODO: copilot wrote all of this
+    for (part_type, parts) in required_parts {
+        let available_parts_of_type = available_parts.get(&part_type);
+        if available_parts_of_type.is_none() {
+            return false;
+        }
+        let available_parts_of_type = available_parts_of_type.unwrap();
+        for part in parts {
+            let mut found_part = false;
+            for available_part in available_parts_of_type {
+                if available_part.value == part.value {
+                    if available_part.quantity >= part.quantity {
+                        println!("Found {} {}", part.quantity, part.value);
+                        found_part = true;
+                    }
+                }
+            }
+            if !found_part {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+#[cfg(test)]
+#[test]
+fn it_works() {
+    assert!(has_sufficient_parts(create_example_parts_list(), create_example_parts_list()));
+    // assert_eq!(2 + 2, 4);
+}
