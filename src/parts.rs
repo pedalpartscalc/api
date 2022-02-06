@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::vec::Vec;
 
-#[derive(Debug)]  
+#[derive(Debug)]
 pub struct Part {
     value: String,
     quantity: u32,
@@ -10,7 +10,7 @@ pub struct Part {
 type PartsMap = HashMap<String, Vec<Part>>;
 
 // store a couple of documents
-// store a current parts doc with 
+// store a current parts doc with
 
 // {
 //     "transistors": [
@@ -31,22 +31,44 @@ type PartsMap = HashMap<String, Vec<Part>>;
 
 pub fn create_example_parts_list() -> PartsMap {
     let mut example_parts = HashMap::new();
-    example_parts.insert("transistors".to_string(), vec![
-        Part {
-            value: "2n5908".to_string(),
-            quantity: 1,
-        },
-        Part {
-            value: "2n5914".to_string(),
-            quantity: 1,
-        },
-    ]);
+    example_parts.insert(
+        "transistors".to_string(),
+        vec![
+            Part {
+                value: "2n5908".to_string(),
+                quantity: 1,
+            },
+            Part {
+                value: "2n5914".to_string(),
+                quantity: 1,
+            },
+        ],
+    );
+    return example_parts;
+}
+
+pub fn create_required_parts_list() -> PartsMap {
+    let mut example_parts = HashMap::new();
+    example_parts.insert(
+        "transistors".to_string(),
+        vec![
+            Part {
+                value: "2n5908".to_string(),
+                quantity: 2,
+            },
+            Part {
+                value: "2n5914".to_string(),
+                quantity: 1,
+            },
+        ],
+    );
     return example_parts;
 }
 
 pub fn has_sufficient_parts(available_parts: PartsMap, required_parts: PartsMap) -> bool {
     // TODO: copilot wrote all of this
     for (part_type, parts) in required_parts {
+        println!("{}", part_type);
         let available_parts_of_type = available_parts.get(&part_type);
         if available_parts_of_type.is_none() {
             return false;
@@ -59,6 +81,11 @@ pub fn has_sufficient_parts(available_parts: PartsMap, required_parts: PartsMap)
                     if available_part.quantity >= part.quantity {
                         println!("Found {} {}", part.quantity, part.value);
                         found_part = true;
+                    } else {
+                        println!(
+                            "Not enough {}, need {} and have {}",
+                            part.value, part.quantity, available_part.quantity
+                        );
                     }
                 }
             }
@@ -73,6 +100,8 @@ pub fn has_sufficient_parts(available_parts: PartsMap, required_parts: PartsMap)
 #[cfg(test)]
 #[test]
 fn it_works() {
-    assert!(has_sufficient_parts(create_example_parts_list(), create_example_parts_list()));
-    // assert_eq!(2 + 2, 4);
+    assert!(!has_sufficient_parts(
+        create_example_parts_list(),
+        create_required_parts_list()
+    ));
 }
