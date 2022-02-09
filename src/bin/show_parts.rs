@@ -15,7 +15,7 @@ fn main() {
         .load::<AvailablePart>(&connection)
         .expect("Error loading posts");
 
-    println!("Displaying {} posts", results.len());
+    println!("Displaying {} parts", results.len());
     for part in results {
         println!("{}", part.part_name);
         println!("----------\n");
