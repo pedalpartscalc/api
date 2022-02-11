@@ -1,4 +1,4 @@
-#[derive(Queryable)]
+#[derive(Queryable, Debug)]
 pub struct AvailablePart {
     pub id: i64,
     pub owner_id: i64,

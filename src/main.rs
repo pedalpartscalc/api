@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate rocket;
-// #[macro_use] std::fmt;
 
 mod parts;
 
