@@ -397,6 +397,8 @@ dependencies = [
  "diesel",
  "dotenv",
  "rocket",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

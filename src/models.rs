@@ -1,4 +1,6 @@
-#[derive(Queryable, Debug)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Queryable, Debug, Serialize, Deserialize)]
 pub struct AvailablePart {
     pub id: i64,
     pub owner_id: i64,
