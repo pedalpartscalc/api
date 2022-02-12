@@ -9,9 +9,24 @@ use diesel::RunQueryDsl;
 use rocket::response::status;
 use rocket::serde::json::Json;
 
+// https://genekuo.medium.com/creating-a-rest-api-in-rust-with-persistence-rust-rocket-and-diesel-a4117d400104
+
 #[get("/parts")]
 fn get_parts() -> String {
     views::list_parts()
+}
+
+#[get("/parts/<pk>")]
+fn get_part(pk: i64) -> String {
+    let connection = db::establish_connection();
+
+    let part = available_parts::table
+        .find(pk)
+        .first::<models::AvailablePart>(&connection)
+        .expect("Error loading part");
+
+    let serialized = serde_json::to_string(&part).unwrap();
+    return serialized;
 }
 
 #[post("/parts", data = "<task>")]
@@ -49,5 +64,8 @@ fn index() -> String {
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![index, get_parts, new_part, delete_part])
+    rocket::build().mount(
+        "/",
+        routes![index, get_parts, get_part, new_part, delete_part],
+    )
 }
