@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Queryable, Debug, Serialize, Deserialize)]
+#[derive(Queryable, AsChangeset, Debug, Serialize, Deserialize)]
 pub struct AvailablePart {
     pub id: i64,
     pub owner_id: i64,

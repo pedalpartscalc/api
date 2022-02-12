@@ -32,6 +32,16 @@ fn delete_part(pk: i64) -> status::Accepted<String> {
     return status::Accepted(Some("".to_string()));
 }
 
+#[put("/<pk>", format = "application/json", data = "<part>")]
+pub fn update_post(pk: i64, part: Json<models::AvailablePart>) -> status::Accepted<String> {
+    let connection = db::establish_connection();
+    diesel::update(available_parts::table.find(pk))
+        .set(&*part)
+        .execute(&connection)
+        .expect("Error updating Part");
+    return status::Accepted(Some("".to_string()));
+}
+
 #[get("/")]
 fn index() -> String {
     format!("Parts {:?}", parts::create_example_parts_list())
