@@ -7,13 +7,13 @@ pub fn create_available_part<'a>(
     conn: &PgConnection,
     part_name: &'a str,
     part_kind: &'a str,
-    quantity: &'a i32,
+    quantity: i32,
 ) -> AvailablePart {
     let new_part = NewAvailablePart {
         part_name: part_name,
         part_kind: part_kind,
         quantity: quantity,
-        owner_id: &1,
+        owner_id: 1,
     };
 
     diesel::insert_into(available_parts::table)

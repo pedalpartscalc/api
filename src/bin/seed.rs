@@ -17,7 +17,7 @@ fn main() {
         &connection,
         &"2n5908".to_string(),
         &"Transistor".to_string(),
-        &1,
+        1,
     );
 
     let results = schema::available_parts::table

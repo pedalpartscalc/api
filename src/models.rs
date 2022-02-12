@@ -11,11 +11,11 @@ pub struct AvailablePart {
 
 use super::schema::available_parts;
 
-#[derive(Insertable)]
+#[derive(Insertable, Debug, Serialize, Deserialize)]
 #[table_name = "available_parts"]
 pub struct NewAvailablePart<'a> {
     pub part_name: &'a str,
     pub part_kind: &'a str,
-    pub quantity: &'a i32,
-    pub owner_id: &'a i64,
+    pub quantity: i32,
+    pub owner_id: i64,
 }
