@@ -36,6 +36,7 @@ serde-aux = "3"
 log = "0.4"
 validator = "0.14"
 reqwest = { version = "0.11", default-features = false, features = ["json", "rustls-tls"] }
+argon2 = { version = "0.3", features = ["std"] }
 
 [dev-dependencies]
 once_cell = "1.7.2"
