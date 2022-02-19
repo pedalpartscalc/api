@@ -1448,6 +1448,7 @@ name = "pedalpartscalc"
 version = "0.1.0"
 dependencies = [
  "actix-web",
+ "anyhow",
  "argon2",
  "chrono",
  "claim",
@@ -1457,12 +1458,14 @@ dependencies = [
  "once_cell",
  "quickcheck",
  "quickcheck_macros",
+ "rand 0.8.5",
  "reqwest",
  "secrecy",
  "serde",
  "serde-aux",
  "serde_json",
  "sqlx",
+ "thiserror",
  "tokio",
  "tracing",
  "tracing-actix-web",
