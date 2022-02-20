@@ -4,7 +4,7 @@ use crate::email_client::EmailClient;
 //     admin_dashboard, change_password, change_password_form, confirm, health_check, home, log_out,
 //     login, login_form, publish_newsletter, publish_newsletter_form, subscribe,
 // };
-use crate::routes::{admin_dashboard, health_check, home, log_out, login, login_form, subscribe};
+use crate::routes::{change_password, health_check, home, log_out, login, subscribe};
 use actix_session::{storage::RedisSessionStore, SessionMiddleware};
 use actix_web::cookie::Key;
 use actix_web::dev::Server;
@@ -94,11 +94,14 @@ async fn run(
             ))
             .wrap(TracingLogger::default())
             .route("/", web::get().to(home))
-            .route("/login", web::get().to(login_form))
+            // .route("/users", web::get().to(handlers::get_users))
+            // .route("/users/{id}", web::get().to(handlers::get_user_by_id))
+            // .route("/users", web::post().to(handlers::add_user))
+            // .route("/users/{id}", web::delete().to(handlers::delete_user))
+            .route("/users/password", web::post().to(change_password))
             .route("/login", web::post().to(login))
             .route("/health_check", web::get().to(health_check))
             .route("/subscriptions", web::post().to(subscribe))
-            .route("/admin/dashboard", web::get().to(admin_dashboard))
             .route("/admin/logout", web::post().to(log_out))
             .app_data(db_pool.clone())
             .app_data(email_client.clone())

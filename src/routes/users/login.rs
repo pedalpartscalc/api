@@ -3,9 +3,8 @@ use crate::session_state::TypedSession;
 use crate::utils::error_chain_fmt;
 use actix_web::error::InternalError;
 use actix_web::http::header::LOCATION;
-use actix_web::http::StatusCode;
+use actix_web::web;
 use actix_web::HttpResponse;
-use actix_web::{web, ResponseError};
 use secrecy::Secret;
 use sqlx::PgPool;
 
@@ -34,7 +33,7 @@ pub async fn login(
             tracing::Span::current().record("user_id", &tracing::field::display(&user_id));
             session
                 .insert_user_id(user_id)
-                .map_err(|e| login_error_response(LoginError::UnexpectedError(e.into())))?;
+                .map_err(|e| login_redirect(LoginError::UnexpectedError(e.into())))?;
             Ok(HttpResponse::SeeOther()
                 .insert_header((LOCATION, "/admin/dashboard"))
                 .finish())
@@ -44,13 +43,18 @@ pub async fn login(
                 AuthError::InvalidCredentials(_) => LoginError::AuthError(e.into()),
                 AuthError::UnexpectedError(_) => LoginError::UnexpectedError(e.into()),
             };
-            Err(login_error_response(e))
+            println!("Last error");
+            Err(login_redirect(e))
         }
     }
 }
 
-fn login_error_response(e: LoginError) -> InternalError<LoginError> {
-    let response = HttpResponse::Unauthorized().finish();
+// Redirect to the login page with an error message.
+fn login_redirect(e: LoginError) -> InternalError<LoginError> {
+    // FlashMessage::error(e.to_string()).send();
+    let response = HttpResponse::SeeOther()
+        .insert_header((LOCATION, "/login"))
+        .finish();
     InternalError::from_response(e, response)
 }
 
@@ -65,14 +69,5 @@ pub enum LoginError {
 impl std::fmt::Debug for LoginError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         error_chain_fmt(self, f)
-    }
-}
-
-impl ResponseError for LoginError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            LoginError::UnexpectedError(_) => StatusCode::INTERNAL_SERVER_ERROR,
-            LoginError::AuthError(_) => StatusCode::UNAUTHORIZED,
-        }
     }
 }

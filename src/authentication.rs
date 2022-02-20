@@ -22,7 +22,7 @@ pub struct Credentials {
 pub async fn validate_credentials(
     credentials: Credentials,
     pool: &PgPool,
-) -> Result<uuid::Uuid, AuthError> {
+) -> Result<i64, AuthError> {
     let mut user_id = None;
     let mut expected_password_hash = Secret::new(
         "$argon2id$v=19$m=15000,t=2,p=1$\
@@ -73,7 +73,7 @@ fn verify_password_hash(
 async fn get_stored_credentials(
     username: &str,
     pool: &PgPool,
-) -> Result<Option<(uuid::Uuid, Secret<String>)>, anyhow::Error> {
+) -> Result<Option<(i64, Secret<String>)>, anyhow::Error> {
     let row = sqlx::query!(
         r#"
         SELECT id, password_hash
@@ -91,7 +91,7 @@ async fn get_stored_credentials(
 
 #[tracing::instrument(name = "Change password", skip(password, pool))]
 pub async fn change_password(
-    user_id: uuid::Uuid,
+    user_id: i64,
     password: Secret<String>,
     pool: &PgPool,
 ) -> Result<(), anyhow::Error> {
