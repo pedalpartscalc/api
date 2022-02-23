@@ -82,12 +82,15 @@ impl ResponseError for ClientError {
 
 #[derive(Debug, Deserialize)]
 pub struct Claims {
+    sub: Option<String>, // This contains the origin and user id
     permissions: Option<HashSet<String>>,
 }
 
 impl Claims {
     pub fn validate_permissions(&self, required_permissions: &HashSet<String>) -> bool {
-        self.permissions.as_ref().map_or(false, |permissions| permissions.is_superset(required_permissions))
+        self.permissions.as_ref().map_or(false, |permissions| {
+            permissions.is_superset(required_permissions)
+        })
     }
 }
 
@@ -140,6 +143,7 @@ impl FromRequest for Claims {
                         .map_err(ClientError::Decode)?;
                     let token =
                         decode::<Claims>(token, &key, &validation).map_err(ClientError::Decode)?;
+                    println!("{:?}", token);
                     Ok(token.claims)
                 }
                 algorithm => Err(ClientError::UnsupportedAlgortithm(algorithm).into()),
