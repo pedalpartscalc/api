@@ -21,7 +21,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(middlewares::logger())
             .service(api::routes())
     })
-    .bind((config.host, config.port))?
+    .bind(("127.0.0.1", config.port))?
     .run()
     .await
 }
