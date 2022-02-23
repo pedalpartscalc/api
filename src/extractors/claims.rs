@@ -82,7 +82,15 @@ impl ResponseError for ClientError {
 
 #[derive(Debug, Deserialize)]
 pub struct Claims {
-    _permissions: Option<HashSet<String>>,
+    permissions: Option<HashSet<String>>,
+}
+
+impl Claims {
+    pub fn validate_permissions(&self, required_permissions: &HashSet<String>) -> bool {
+        self.permissions.as_ref().map_or(false, |permissions| {
+            permissions.is_superset(required_permissions)
+        })
+    }
 }
 
 impl FromRequest for Claims {
