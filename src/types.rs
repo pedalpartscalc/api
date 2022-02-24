@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 pub struct Config {
     pub port: u16,
     pub client_origin_url: String,
+    pub database_url: String,
 }
 
 impl Default for Config {
