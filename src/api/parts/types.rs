@@ -13,3 +13,11 @@ pub struct AvailablePart {
 pub struct PartId {
     pub id: i64,
 }
+
+// Available part minus the ids for when we're creating a new one
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NewAvailablePart {
+    pub part_name: String,
+    pub part_kind: String,
+    pub quantity: i32,
+}

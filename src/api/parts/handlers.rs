@@ -1,14 +1,22 @@
-use super::types::{AvailablePart, PartId};
-use actix_web::{get, web};
+use super::types::{AvailablePart, NewAvailablePart, PartId};
+use crate::extractors::Claims;
+use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
 use sqlx::PgPool;
 
-// #[get("/")]
-// pub async fn get_parts() -> impl Responder {
-//     todo!()
-// }
+#[get("")]
+pub async fn get_parts(claims: Claims, db_pool: web::Data<PgPool>) -> impl Responder {
+    println!("{:?}", claims);
+    match sqlx::query_as!(AvailablePart, r#"SELECT * FROM available_parts"#,)
+        .fetch_all(&**db_pool)
+        .await
+    {
+        Ok(parts) => Ok(web::Json(parts)),
+        Err(_) => Err(HttpResponse::Forbidden()),
+    }
+}
 
 #[get("/{id}")]
-async fn get_part(
+pub async fn get_part(
     path: web::Query<PartId>,
     db_pool: web::Data<PgPool>,
 ) -> std::io::Result<web::Json<AvailablePart>> {
@@ -22,35 +30,55 @@ async fn get_part(
     .expect("Could not fetch part");
 
     Ok(web::Json(part))
-    // Ok(web::Json({}))
-    // let serialized = serde_json::to_string(&part).unwrap();
-    // return serialized;
 }
 
-// #[post("/parts", data = "<task>")]
-// fn new_part(task: Json<models::NewAvailablePart>) -> status::Accepted<String> {
-//     let connection = db::establish_connection();
-//     views::create_available_part(&connection, &task.part_name, &task.part_kind, task.quantity);
-//     return status::Accepted(Some("".to_string()));
-// }
+#[post("")]
+pub async fn new_part(
+    part: web::Json<NewAvailablePart>,
+    db_pool: web::Data<PgPool>,
+) -> HttpResponse {
+    // TODO: use the claims input to find the owner id
+    let part = part.into_inner();
+    let part_id = sqlx::query_as!(
+        PartId,
+        r#"INSERT INTO available_parts (owner_id, part_name, part_kind, quantity) VALUES ($1, $2, $3, $4) RETURNING id"#,
+        1,
+        &part.part_name,
+        &part.part_kind,
+        &part.quantity
+    )
+    .fetch_one(&**db_pool)
+    .await
+    .expect("Could not insert part");
 
-// #[delete("/parts/<pk>")]
-// fn delete_part(pk: i64) -> status::Accepted<String> {
-//     let connection = db::establish_connection();
+    HttpResponse::Ok().json(part_id.id)
+}
 
-//     // Had weird error related to the fact I was trying to use an i32 for the primary key and it's an i64 in schema
-//     diesel::delete(available_parts::table.find(pk))
-//         .execute(&connection)
-//         .expect("Error deleting Part");
-//     return status::Accepted(Some("".to_string()));
-// }
+#[delete("/{pk}")]
+pub async fn delete_part(path: web::Query<PartId>, db_pool: web::Data<PgPool>) -> HttpResponse {
+    sqlx::query!(r#"DELETE FROM available_parts WHERE id=$1"#, path.id)
+        .execute(&**db_pool)
+        .await
+        .expect("Could not delete part");
+    HttpResponse::Ok().finish()
+}
 
-// #[put("/<pk>", format = "application/json", data = "<part>")]
-// pub fn update_post(pk: i64, part: Json<models::AvailablePart>) -> status::Accepted<String> {
-//     let connection = db::establish_connection();
-//     diesel::update(available_parts::table.find(pk))
-//         .set(&*part)
-//         .execute(&connection)
-//         .expect("Error updating Part");
-//     return status::Accepted(Some("".to_string()));
-// }
+#[put("/{pk}")]
+pub async fn update_part(
+    path: web::Query<PartId>,
+    part: web::Json<NewAvailablePart>,
+    db_pool: web::Data<PgPool>,
+) -> HttpResponse {
+    let part = part.into_inner();
+    sqlx::query!(
+        r#"UPDATE available_parts SET part_name=$1, part_kind=$2, quantity=$3 WHERE id=$4"#,
+        &part.part_name,
+        &part.part_kind,
+        &part.quantity,
+        path.id,
+    )
+    .execute(&**db_pool)
+    .await
+    .expect("Could not update part");
+    HttpResponse::Ok().finish()
+}
