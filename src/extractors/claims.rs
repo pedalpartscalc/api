@@ -112,8 +112,18 @@ impl Claims {
         .await
         .expect("Failed to get owner id");
         if owner_id.is_none() {
-            // TODO: add the user to the database if they don't exist
-            return 1;
+            let new_owner_id = sqlx::query!(
+                r#"
+                    INSERT INTO users (auth_zero_id)
+                    VALUES ($1)
+                    RETURNING id"#,
+                auth_zero_id
+            )
+            .fetch_one(db_pool)
+            .await
+            .expect("Failed to insert new user")
+            .id;
+            return new_owner_id;
         }
         owner_id.unwrap().id
     }
