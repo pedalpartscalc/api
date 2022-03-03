@@ -15,6 +15,7 @@ use jsonwebtoken::{
     Algorithm, DecodingKey, Validation,
 };
 use serde::Deserialize;
+use sqlx::PgPool;
 use std::{collections::HashSet, future::Future, pin::Pin};
 
 #[derive(Clone, Deserialize)]
@@ -91,6 +92,30 @@ impl Claims {
         self.permissions.as_ref().map_or(false, |permissions| {
             permissions.is_superset(required_permissions)
         })
+    }
+
+    pub async fn owner_id(&self, db_pool: &PgPool) -> i64 {
+        let auth_zero_id: String = self
+            .sub
+            .as_ref()
+            .map(|sub| sub.split('|').nth(1).unwrap())
+            .unwrap()
+            .to_string();
+        let owner_id = sqlx::query!(
+            r#"
+                SELECT id
+                FROM users
+                WHERE auth_zero_id = $1"#,
+            auth_zero_id
+        )
+        .fetch_optional(db_pool)
+        .await
+        .expect("Failed to get owner id");
+        if owner_id.is_none() {
+            // TODO: add the user to the database if they don't exist
+            return 1;
+        }
+        owner_id.unwrap().id
     }
 }
 

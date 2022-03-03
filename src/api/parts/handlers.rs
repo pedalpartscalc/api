@@ -6,7 +6,7 @@ use sqlx::PgPool;
 #[get("")]
 pub async fn get_parts(claims: Claims, db_pool: web::Data<PgPool>) -> impl Responder {
     println!("{:?}", claims);
-    match sqlx::query_as!(AvailablePart, r#"SELECT * FROM available_parts"#,)
+    match sqlx::query_as!(AvailablePart, r#"SELECT * FROM available_parts"#)
         .fetch_all(&**db_pool)
         .await
     {
@@ -34,15 +34,16 @@ pub async fn get_part(
 
 #[post("")]
 pub async fn new_part(
+    claims: Claims,
     part: web::Json<NewAvailablePart>,
     db_pool: web::Data<PgPool>,
 ) -> HttpResponse {
-    // TODO: use the claims input to find the owner id
+    let owner_id: i64 = claims.owner_id(&**db_pool).await;
     let part = part.into_inner();
     let part_id = sqlx::query_as!(
         PartId,
         r#"INSERT INTO available_parts (owner_id, part_name, part_kind, quantity) VALUES ($1, $2, $3, $4) RETURNING id"#,
-        1,
+        owner_id,
         &part.part_name,
         &part.part_kind,
         &part.quantity
