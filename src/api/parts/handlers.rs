@@ -22,7 +22,7 @@ pub async fn get_parts(claims: Claims, db_pool: web::Data<PgPool>) -> impl Respo
 #[get("/{id}")]
 pub async fn get_part(
     claims: Claims,
-    path: web::Query<PartId>,
+    path: web::Path<PartId>,
     db_pool: web::Data<PgPool>,
 ) -> impl Responder {
     let owner_id: i64 = claims.owner_id(&**db_pool).await;
@@ -64,8 +64,8 @@ pub async fn new_part(
     HttpResponse::Ok().json(part_id.id)
 }
 
-#[delete("/{pk}")]
-pub async fn delete_part(path: web::Query<PartId>, db_pool: web::Data<PgPool>) -> HttpResponse {
+#[delete("/{id}")]
+pub async fn delete_part(path: web::Path<PartId>, db_pool: web::Data<PgPool>) -> HttpResponse {
     sqlx::query!(r#"DELETE FROM available_parts WHERE id=$1"#, path.id)
         .execute(&**db_pool)
         .await
@@ -73,10 +73,10 @@ pub async fn delete_part(path: web::Query<PartId>, db_pool: web::Data<PgPool>) -
     HttpResponse::Ok().finish()
 }
 
-#[put("/{pk}")]
+#[put("/{id}")]
 pub async fn update_part(
     claims: Claims,
-    path: web::Query<PartId>,
+    path: web::Path<PartId>,
     part: web::Json<NewAvailablePart>,
     db_pool: web::Data<PgPool>,
 ) -> HttpResponse {

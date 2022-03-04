@@ -178,7 +178,6 @@ impl FromRequest for Claims {
                         .map_err(ClientError::Decode)?;
                     let token =
                         decode::<Claims>(token, &key, &validation).map_err(ClientError::Decode)?;
-                    println!("{:?}", token);
                     Ok(token.claims)
                 }
                 algorithm => Err(ClientError::UnsupportedAlgortithm(algorithm).into()),
