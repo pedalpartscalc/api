@@ -5,10 +5,14 @@ use sqlx::PgPool;
 
 #[get("")]
 pub async fn get_parts(claims: Claims, db_pool: web::Data<PgPool>) -> impl Responder {
-    println!("{:?}", claims);
-    match sqlx::query_as!(AvailablePart, r#"SELECT * FROM available_parts"#)
-        .fetch_all(&**db_pool)
-        .await
+    let owner_id: i64 = claims.owner_id(&**db_pool).await;
+    match sqlx::query_as!(
+        AvailablePart,
+        r#"SELECT * FROM available_parts WHERE owner_id=$1"#,
+        owner_id
+    )
+    .fetch_all(&**db_pool)
+    .await
     {
         Ok(parts) => Ok(web::Json(parts)),
         Err(_) => Err(HttpResponse::Forbidden()),
@@ -17,9 +21,11 @@ pub async fn get_parts(claims: Claims, db_pool: web::Data<PgPool>) -> impl Respo
 
 #[get("/{id}")]
 pub async fn get_part(
+    claims: Claims,
     path: web::Query<PartId>,
     db_pool: web::Data<PgPool>,
-) -> std::io::Result<web::Json<AvailablePart>> {
+) -> impl Responder {
+    let owner_id: i64 = claims.owner_id(&**db_pool).await;
     let part = sqlx::query_as!(
         AvailablePart,
         r#"SELECT * FROM available_parts WHERE id=$1"#,
@@ -28,6 +34,9 @@ pub async fn get_part(
     .fetch_one(&**db_pool)
     .await
     .expect("Could not fetch part");
+    if part.owner_id != owner_id {
+        return Err(HttpResponse::Forbidden());
+    }
 
     Ok(web::Json(part))
 }
@@ -66,17 +75,20 @@ pub async fn delete_part(path: web::Query<PartId>, db_pool: web::Data<PgPool>) -
 
 #[put("/{pk}")]
 pub async fn update_part(
+    claims: Claims,
     path: web::Query<PartId>,
     part: web::Json<NewAvailablePart>,
     db_pool: web::Data<PgPool>,
 ) -> HttpResponse {
+    let owner_id: i64 = claims.owner_id(&**db_pool).await;
     let part = part.into_inner();
     sqlx::query!(
-        r#"UPDATE available_parts SET part_name=$1, part_kind=$2, quantity=$3 WHERE id=$4"#,
+        r#"UPDATE available_parts SET part_name=$1, part_kind=$2, quantity=$3 WHERE id=$4 and owner_id=$5"#,
         &part.part_name,
         &part.part_kind,
         &part.quantity,
         path.id,
+        owner_id
     )
     .execute(&**db_pool)
     .await
