@@ -20,7 +20,6 @@ async fn main() -> std::io::Result<()> {
     dotenv().ok();
     env_logger::init();
     let config = types::Config::default();
-    println!("{}", &config.client_origin_url);
     let auth0_config = extractors::Auth0Config::default();
     let db_pool = Data::new(get_connection_pool(config.database_url));
     HttpServer::new(move || {

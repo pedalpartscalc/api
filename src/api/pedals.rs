@@ -1,6 +1,5 @@
-mod messages;
-mod parts;
-mod pedals;
+mod handlers;
 mod routes;
+mod types;
 
 pub use self::routes::routes;

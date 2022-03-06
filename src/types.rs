@@ -21,3 +21,10 @@ pub struct ErrorMessage {
     pub error_description: Option<String>,
     pub message: String,
 }
+
+
+// Wrapper for an ID value returned by many queries
+#[derive(Deserialize)]
+pub struct Id {
+    pub id: i64,
+}

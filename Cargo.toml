@@ -1,11 +1,10 @@
 [package]
-name = "api_actix-web_rust_hello-world"
+name = "pedalpartscalc"
 version = "0.1.0"
-authors = ["Sebastian Estrella <sestrella@stackbuilders.com>"]
+authors = ["Jonathan Payless <me@jonathanbayless.com>"]
 edition = "2021"
 rust-version = "1.56"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+default-run = "pedalpartscalc"
 
 [dependencies]
 actix-cors = "^0.5.4"
@@ -17,4 +16,9 @@ env_logger = "^0.9.0"
 envy = "^0.4.2"
 jsonwebtoken = "^8.0.0-beta.6"
 serde = "^1.0.130"
-sqlx = { version = "0.5", features = [ "runtime-async-std-native-tls", "postgres", "macros", "migrate"] }
+sqlx = { version = "0.5", features = [ "runtime-async-std-native-tls", "postgres", "macros", "migrate", "chrono"] }
+chrono = { version = "^0.4.19", features = ["serde"] }
+
+[[bin]]
+name = "seed"
+path = "src/seed.rs"
