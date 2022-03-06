@@ -18,6 +18,7 @@ jsonwebtoken = "^8.0.0-beta.6"
 serde = "^1.0.130"
 sqlx = { version = "0.5", features = [ "runtime-async-std-native-tls", "postgres", "macros", "migrate", "chrono"] }
 chrono = { version = "^0.4.19", features = ["serde"] }
+itertools = "^0.8.0"
 
 [[bin]]
 name = "seed"

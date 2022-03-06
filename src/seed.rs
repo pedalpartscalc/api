@@ -34,7 +34,7 @@ async fn main() {
 
     sqlx::migrate!().run(&db_pool).await.expect("Could not migrate database");
     
-    let pedal_id = sqlx::query_as!(
+    let first_pedal_id = sqlx::query_as!(
         types::Id,
         r#"INSERT INTO pedals (name, kind) VALUES ($1, $2) RETURNING id"#,
         "Test Pedal",
@@ -46,7 +46,7 @@ async fn main() {
 
     sqlx::query!(
         r#"INSERT INTO required_parts (pedal_id, part_name, part_kind, quantity) VALUES ($1, $2, $3, $4)"#,
-        pedal_id.id,
+        first_pedal_id.id,
         "2n5908",
         "Transistor",
         3
@@ -57,7 +57,39 @@ async fn main() {
     
     sqlx::query!(
         r#"INSERT INTO required_parts (pedal_id, part_name, part_kind, quantity) VALUES ($1, $2, $3, $4)"#,
-        pedal_id.id,
+        first_pedal_id.id,
+        "1n4148",
+        "Diode",
+        2
+    )
+    .execute(&db_pool)
+    .await
+    .expect("Could not insert part");
+
+    let second_pedal_id = sqlx::query_as!(
+        types::Id,
+        r#"INSERT INTO pedals (name, kind) VALUES ($1, $2) RETURNING id"#,
+        "Test Pedal",
+        "Overdrive"
+    )
+    .fetch_one(&db_pool)
+    .await
+    .expect("Could not insert pedal");
+
+    sqlx::query!(
+        r#"INSERT INTO required_parts (pedal_id, part_name, part_kind, quantity) VALUES ($1, $2, $3, $4)"#,
+        second_pedal_id.id,
+        "2n5908",
+        "Transistor",
+        3
+    )
+    .execute(&db_pool)
+    .await
+    .expect("Could not insert part");
+    
+    sqlx::query!(
+        r#"INSERT INTO required_parts (pedal_id, part_name, part_kind, quantity) VALUES ($1, $2, $3, $4)"#,
+        second_pedal_id.id,
         "1n4148",
         "Diode",
         2
