@@ -79,25 +79,36 @@ pub async fn get_pedal(path: web::Path<Id>, _claims: Claims, db_pool: web::Data<
     }
 }
 
-// #[get("/available")]
-// pub async fn get_available_pedals(claims: Claims, db_pool: web::Data<PgPool>) -> impl Responder {
-//     let owner_id: i64 = claims.owner_id(&**db_pool).await;
-//     let available_parts = sqlx::query_as!(
-//         AvailablePart,
-//         r#"SELECT * FROM available_parts WHERE owner_id=$1"#,
-//         owner_id
-//     )
-//     .fetch_all(&**db_pool)
-//     .await
-//     .expect("Could not fetch parts");
-
-//     Ok(web::Json({}))
-// }
-
 #[get("/available")]
-pub async fn get_available_pedals(_claims: Claims, db_pool: web::Data<PgPool>) -> impl Responder {
-    match get_all_pedals(db_pool).await {
-        Ok(pedals) => Ok(web::Json(pedals)),
-        Err(_) => Err(HttpResponse::NotFound()),
-    }
+pub async fn get_available_pedals(claims: Claims, db_pool: web::Data<PgPool>) -> impl Responder {
+    let owner_id: i64 = claims.owner_id(&**db_pool).await;
+    let available_parts = sqlx::query_as!(
+        AvailablePart,
+        r#"SELECT * FROM available_parts WHERE owner_id=$1"#,
+        owner_id
+    )
+    .fetch_all(&**db_pool)
+    .await
+    .expect("Could not fetch parts");
+
+    let mut pedals = match get_all_pedals(db_pool).await {
+        Ok(pedals) => pedals,
+        Err(_) => return Err(HttpResponse::NotFound()),
+    };
+
+    pedals.retain(|pedal| {
+        pedal.required_parts.iter().all(|part| {
+            available_parts.iter().find(|available_part| available_part.part_name == part.part_name && available_part.part_kind == part.part_kind && available_part.quantity >= part.quantity).is_some()
+        })
+    });
+
+    return Ok(web::Json(pedals));
+}
+
+#[test]
+fn test_available_pedals() {
+    // open a database connection?
+    // create two pedals
+    // for each pedal, set two required parts with quantities of 1 and 2
+    // make enough available parts for one of the two pedals
 }
