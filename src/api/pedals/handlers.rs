@@ -8,7 +8,7 @@ use itertools::Itertools;
 
 // TODO: Make all of these hidden behind Admin access
 
-fn pedal_rows_to_pedal(rows: std::vec::Vec<PedalPartRow>) -> Pedal {
+pub fn pedal_rows_to_pedal(rows: std::vec::Vec<PedalPartRow>) -> Pedal {
     let mut pedal = Pedal {
         id: rows[0].id,
         name: rows[0].name.clone(),
@@ -79,6 +79,14 @@ pub async fn get_pedal(path: web::Path<Id>, _claims: Claims, db_pool: web::Data<
     }
 }
 
+pub fn remove_unavailable_pedals(pedals: &mut std::vec::Vec<Pedal>, available_parts: std::vec::Vec<AvailablePart>) -> () {
+    pedals.retain(|pedal| {
+        pedal.required_parts.iter().all(|part| {
+            available_parts.iter().find(|available_part| available_part.part_name == part.part_name && available_part.part_kind == part.part_kind && available_part.quantity >= part.quantity).is_some()
+        })
+    });
+}
+
 #[get("/available")]
 pub async fn get_available_pedals(claims: Claims, db_pool: web::Data<PgPool>) -> impl Responder {
     let owner_id: i64 = claims.owner_id(&**db_pool).await;
@@ -96,19 +104,7 @@ pub async fn get_available_pedals(claims: Claims, db_pool: web::Data<PgPool>) ->
         Err(_) => return Err(HttpResponse::NotFound()),
     };
 
-    pedals.retain(|pedal| {
-        pedal.required_parts.iter().all(|part| {
-            available_parts.iter().find(|available_part| available_part.part_name == part.part_name && available_part.part_kind == part.part_kind && available_part.quantity >= part.quantity).is_some()
-        })
-    });
+    remove_unavailable_pedals(&mut pedals, available_parts);
 
     return Ok(web::Json(pedals));
-}
-
-#[test]
-fn test_available_pedals() {
-    // open a database connection?
-    // create two pedals
-    // for each pedal, set two required parts with quantities of 1 and 2
-    // make enough available parts for one of the two pedals
 }

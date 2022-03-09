@@ -1,5 +1,5 @@
-mod handlers;
-mod routes;
-mod types;
+pub mod handlers;
+pub mod routes;
+pub mod types;
 
 pub use self::routes::routes;

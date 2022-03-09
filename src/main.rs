@@ -1,12 +1,8 @@
-mod api;
-mod extractors;
-mod middlewares;
-mod types;
-
 use actix_web::{web::Data, App, HttpServer};
 use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
+use pedalpartscalc::{types, extractors, middlewares, api};
 
 pub fn get_connection_pool(db_url: String) -> PgPool {
     PgPoolOptions::new()
