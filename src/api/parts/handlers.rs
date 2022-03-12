@@ -65,8 +65,9 @@ pub async fn new_part(
 }
 
 #[delete("/{id}")]
-pub async fn delete_part(path: web::Path<PartId>, db_pool: web::Data<PgPool>) -> HttpResponse {
-    sqlx::query!(r#"DELETE FROM available_parts WHERE id=$1"#, path.id)
+pub async fn delete_part(claims: Claims, path: web::Path<PartId>, db_pool: web::Data<PgPool>) -> HttpResponse {
+    let owner_id: i64 = claims.owner_id(&**db_pool).await;
+    sqlx::query!(r#"DELETE FROM available_parts WHERE id=$1 AND owner_id=$2"#, path.id, owner_id)
         .execute(&**db_pool)
         .await
         .expect("Could not delete part");
