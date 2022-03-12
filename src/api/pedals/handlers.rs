@@ -108,3 +108,127 @@ pub async fn get_available_pedals(claims: Claims, db_pool: web::Data<PgPool>) ->
 
     return Ok(web::Json(pedals));
 }
+
+#[post("")]
+pub async fn new_pedal(
+    _claims: Claims,
+    new_pedal: web::Json<NewPedal>,
+    db_pool: web::Data<PgPool>,
+) -> impl Responder {
+    let new_pedal = new_pedal.into_inner();
+    match sqlx::query_as!(
+        Id,
+        r#"INSERT INTO pedals (name, kind) VALUES ($1, $2) RETURNING id"#,
+        new_pedal.name,
+        new_pedal.kind
+    )
+    .fetch_one(&**db_pool)
+    .await {
+        Ok(id) => Ok(web::Json(id.id)),
+        Err(_) => Err(HttpResponse::InternalServerError()),
+    }
+}
+
+#[put("/{id}")]
+pub async fn update_pedal(
+    _claims: Claims,
+    path: web::Path<Id>,
+    pedal: web::Json<NewPedal>,
+    db_pool: web::Data<PgPool>,
+) -> impl Responder {
+    let update_pedal = pedal.into_inner();
+    match sqlx::query!(
+        r#"UPDATE pedals SET name=$1, kind=$2 WHERE id=$3"#,
+        update_pedal.name,
+        update_pedal.kind,
+        path.id
+    )
+    .execute(&**db_pool)
+    .await {
+        Ok(_) => Ok(HttpResponse::Ok().finish()),
+        Err(_) => Err(HttpResponse::InternalServerError()),
+    }
+}
+
+#[delete("/{id}")]
+pub async fn delete_pedal(
+    _claimms: Claims,
+    path: web::Path<Id>,
+    db_pool: web::Data<PgPool>,
+) -> impl Responder {
+    match sqlx::query!(
+        r#"DELETE FROM pedals WHERE id=$1"#,
+        path.id
+    )
+    .execute(&**db_pool)
+    .await {
+        Ok(_) => Ok(HttpResponse::Ok().finish()),
+        Err(_) => Err(HttpResponse::InternalServerError()),
+    }
+}
+
+#[post("/{id}/parts")]
+pub async fn create_required_part(
+    _claims: Claims,
+    path: web::Path<Id>,
+    required_part: web::Json<NewRequiredPart>,
+    db_pool: web::Data<PgPool>,
+) -> impl Responder {
+    let required_part = required_part.into_inner();
+    match sqlx::query_as!(
+        Id,
+        r#"INSERT INTO required_parts (pedal_id, part_name, part_kind, quantity) VALUES ($1, $2, $3, $4) RETURNING id"#,
+        path.id,
+        required_part.part_name,
+        required_part.part_kind,
+        required_part.quantity
+    )
+    .fetch_one(&**db_pool)
+    .await {
+        Ok(id) => Ok(web::Json(id.id)),
+        Err(_) => Err(HttpResponse::InternalServerError()),
+    }
+}
+
+#[put("/{id}/parts/{part_id}")]
+pub async fn update_required_part(
+    _claims: Claims,
+    path: web::Path<(i64, i64)>,
+    required_part: web::Json<NewRequiredPart>,
+    db_pool: web::Data<PgPool>,
+) -> impl Responder {
+    let (pedal_id, part_id) = path.into_inner();
+    let required_part = required_part.into_inner();
+    match sqlx::query!(
+        r#"UPDATE required_parts SET part_name=$1, part_kind=$2, quantity=$3 WHERE pedal_id=$4 AND id=$5"#,
+        required_part.part_name,
+        required_part.part_kind,
+        required_part.quantity,
+        pedal_id,
+        part_id
+    )
+    .execute(&**db_pool)
+    .await {
+        Ok(_) => Ok(HttpResponse::Ok().finish()),
+        Err(_) => Err(HttpResponse::InternalServerError()),
+    }
+}
+
+#[delete("/{id}/parts/{part_id}")]
+pub async fn delete_required_part(
+    _claims: Claims,
+    path: web::Path<(i64, i64)>,
+    db_pool: web::Data<PgPool>,
+) -> impl Responder {
+    let (pedal_id, part_id) = path.into_inner();
+    match sqlx::query!(
+        r#"DELETE FROM required_parts WHERE pedal_id=$1 AND id=$2"#,
+        pedal_id,
+        part_id
+    )
+    .execute(&**db_pool)
+    .await {
+        Ok(_) => Ok(HttpResponse::Ok().finish()),
+        Err(_) => Err(HttpResponse::InternalServerError()),
+    }
+}
