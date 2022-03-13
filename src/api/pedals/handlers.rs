@@ -63,12 +63,19 @@ async fn get_all_pedals(db_pool: web::Data<PgPool>) -> std::io::Result<std::vec:
     .expect("Could not fetch pedal rows");
 
     let mut pedals: std::vec::Vec<Pedal> = vec![];
-    for (key, group) in &rows.into_iter().group_by(|row| row.id) {
-        println!("{}", key);
+    for (_, group) in &rows.into_iter().group_by(|row| row.id) {
         pedals.push(pedal_rows_to_pedal(group.into_iter().collect()));
     }
     
     Ok(pedals)
+}
+
+#[get("")]
+pub async fn get_pedals(db_pool: web::Data<PgPool>) -> impl Responder {
+    match get_all_pedals(db_pool).await {
+        Ok(pedals) => Ok(web::Json(pedals)),
+        Err(err) => Err(HttpResponse::InternalServerError().json(err.to_string())),
+    }
 }
 
 #[get("/{id}")]
