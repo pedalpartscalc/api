@@ -8,4 +8,7 @@ pub fn routes() -> Scope {
         .service(handlers::get_pedals)
         .service(handlers::new_pedal)
         .service(handlers::update_pedal)
+        .service(handlers::create_required_part)
+        .service(handlers::update_required_part)
+        .service(handlers::delete_required_part)
 }

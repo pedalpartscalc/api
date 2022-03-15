@@ -13,7 +13,6 @@ pub struct RequiredPart {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NewRequiredPart {
-    pub pedal_id: i64,
     pub part_name: String,
     pub part_kind: String,
     pub quantity: i32,
