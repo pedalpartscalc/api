@@ -29,6 +29,7 @@ pub fn pedal_rows_to_pedal(rows: std::vec::Vec<PedalPartRow>) -> Pedal {
             quantity: row.part_quantity.unwrap(),
         });
     }
+    pedal.required_parts.sort_by(|a, b| a.part_kind.to_lowercase().cmp(&b.part_kind.to_lowercase()));
     return pedal;
 }
 
