@@ -1,4 +1,4 @@
-use super::{messages, parts, pedals};
+use super::{messages, parts, pedals, auth};
 use actix_web::{web, Scope};
 
 pub fn routes() -> Scope {
@@ -6,4 +6,5 @@ pub fn routes() -> Scope {
         .service(messages::routes())
         .service(parts::routes())
         .service(pedals::routes())
+        .service(auth::routes())
 }
