@@ -1,4 +1,4 @@
 RUST_CARGO_BUILD_FLAGS="--release --bin pedalpartscalc"
 RUST_INSTALL_SQLX=1
 SQLX_OFFLINE=1
-SQLX_FLAGS="--no-default-features --features postgres"
+SQLX_FLAGS="--no-default-features --features postgres runtime-async-std-native-tls"
