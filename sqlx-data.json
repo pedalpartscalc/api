@@ -1,0 +1,416 @@
+{
+  "db": "PostgreSQL",
+  "05acd97bcc52272051c84839e4b39bf1b89abb9ed0dc3c234e4913e45beab253": {
+    "query": "UPDATE required_parts SET part_name=$1, part_kind=$2, quantity=$3 WHERE pedal_id=$4 AND id=$5",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Int4",
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "4145bfa63b9cd730965d0a424158379f5fefa495bb92210afec0e386094ecaca": {
+    "query": "INSERT INTO available_parts (owner_id, part_name, part_kind, quantity) VALUES ($1, $2, $3, $4) RETURNING id",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Varchar",
+          "Varchar",
+          "Int4"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "45d6fe8c63baa4bc5ed4efdae4bc9e138fc4e5d2595fb8ad0bc0239f6134c7d2": {
+    "query": "SELECT pedals.id, pedals.name, pedals.kind, pedals.created_at, pedals.updated_at, required_parts.id AS \"part_id?\", required_parts.part_name as \"part_name?\", required_parts.part_kind as \"part_kind?\", required_parts.quantity as \"part_quantity?\"\n            FROM pedals \n            LEFT OUTER JOIN required_parts \n                ON pedals.id=required_parts.pedal_id \n            WHERE pedals.id=$1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "name",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 2,
+          "name": "kind",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 3,
+          "name": "created_at",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 4,
+          "name": "updated_at",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 5,
+          "name": "part_id?",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 6,
+          "name": "part_name?",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 7,
+          "name": "part_kind?",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 8,
+          "name": "part_quantity?",
+          "type_info": "Int4"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "4f8e6b0403f59adf01fe1bd163e9f403bb9f7f69837bd5f5dfc9a6b753cdf7c8": {
+    "query": "DELETE FROM pedals WHERE id=$1",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "65e03b241b38dff5d0faf79899a47a5d58a8af7908c1b4a6e30e9e692ce326f4": {
+    "query": "SELECT * FROM available_parts WHERE id=$1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "owner_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "part_name",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 3,
+          "name": "part_kind",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 4,
+          "name": "quantity",
+          "type_info": "Int4"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "6d622340d867cbfdd8fcaca32a40b2cfee8e5587ae7f8aec8558e642f708505a": {
+    "query": "UPDATE pedals SET name=$1, kind=$2 WHERE id=$3",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "93979ac91168d05939d3c869ec86f5c15b959835ba416ba26daf29188369ec76": {
+    "query": "\n                SELECT id\n                FROM users\n                WHERE auth_zero_id = $1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "ab28607ff6b040e30a34a0e05b059d35f66cd1cd4f964342ef846274801b7e86": {
+    "query": "UPDATE available_parts SET part_name=$1, part_kind=$2, quantity=$3 WHERE id=$4 and owner_id=$5",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Int4",
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "bef29885101df3f0661fca1e59b5608112e03697a7555df0e2d3a9cf44a9e28c": {
+    "query": "SELECT * FROM available_parts WHERE owner_id=$1",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "owner_id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 2,
+          "name": "part_name",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 3,
+          "name": "part_kind",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 4,
+          "name": "quantity",
+          "type_info": "Int4"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8"
+        ]
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "c5a09a7dc0adc16dbdd5ee6111c4ca1987712271d333d7e19a95fcdb7a532828": {
+    "query": "DELETE FROM available_parts WHERE id=$1 AND owner_id=$2",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  },
+  "c84478733bda8e3654db77de621446f658e4efe2071b05da80fc06a3b1e4ff02": {
+    "query": "INSERT INTO pedals (name, kind) VALUES ($1, $2) RETURNING id",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "e38acb6f749498ec065ec4dbd126252777082b90f70c6cd51257dc73d86dd4b7": {
+    "query": "\n                    INSERT INTO users (auth_zero_id)\n                    VALUES ($1)\n                    RETURNING id",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Varchar"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "e4908185cbd26ff2b9eb3d60c6b413ca6d696d9ee84673c181bd70042e46b3d6": {
+    "query": "SELECT pedals.id, pedals.name, pedals.kind, pedals.created_at, pedals.updated_at, required_parts.id AS \"part_id?\", required_parts.part_name as \"part_name?\", required_parts.part_kind as \"part_kind?\", required_parts.quantity as \"part_quantity?\"\n            FROM pedals \n            LEFT OUTER JOIN required_parts \n                ON pedals.id=required_parts.pedal_id\n        ORDER BY pedals.id",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 1,
+          "name": "name",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 2,
+          "name": "kind",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 3,
+          "name": "created_at",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 4,
+          "name": "updated_at",
+          "type_info": "Timestamptz"
+        },
+        {
+          "ordinal": 5,
+          "name": "part_id?",
+          "type_info": "Int8"
+        },
+        {
+          "ordinal": 6,
+          "name": "part_name?",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 7,
+          "name": "part_kind?",
+          "type_info": "Varchar"
+        },
+        {
+          "ordinal": 8,
+          "name": "part_quantity?",
+          "type_info": "Int4"
+        }
+      ],
+      "parameters": {
+        "Left": []
+      },
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    }
+  },
+  "e4bce86854f82a18510ffa78ec3f60c01d4bfe95c7d24c5f7fc3145b9e43cad0": {
+    "query": "INSERT INTO required_parts (pedal_id, part_name, part_kind, quantity) VALUES ($1, $2, $3, $4) RETURNING id",
+    "describe": {
+      "columns": [
+        {
+          "ordinal": 0,
+          "name": "id",
+          "type_info": "Int8"
+        }
+      ],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Varchar",
+          "Varchar",
+          "Int4"
+        ]
+      },
+      "nullable": [
+        false
+      ]
+    }
+  },
+  "ff61725e3ee52bdda372d93093addc925ddd09f552716527d244c5703c9e5c42": {
+    "query": "DELETE FROM required_parts WHERE pedal_id=$1 AND id=$2",
+    "describe": {
+      "columns": [],
+      "parameters": {
+        "Left": [
+          "Int8",
+          "Int8"
+        ]
+      },
+      "nullable": []
+    }
+  }
+}
