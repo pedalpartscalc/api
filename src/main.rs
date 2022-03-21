@@ -28,7 +28,7 @@ async fn main() -> std::io::Result<()> {
             .service(api::routes())
             .app_data(db_pool.clone())
     })
-    .bind(("127.0.0.1", config.port))?
+    .bind((config.ip_address, config.port))?
     .run()
     .await
 }

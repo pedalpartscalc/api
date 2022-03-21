@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
 pub struct Config {
+    pub ip_address: String,
     pub port: u16,
     pub client_origin_url: String,
     pub database_url: String,
