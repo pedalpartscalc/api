@@ -24,6 +24,7 @@ pub struct PedalPartRow {
     pub id: i64,
     pub name: String,
     pub kind: String,
+    pub build_doc_link: Option<String>,
     #[serde(with = "ts_seconds")]
     pub created_at: DateTime<Utc>,
     #[serde(with = "ts_seconds")]
@@ -41,6 +42,7 @@ pub struct Pedal {
     pub id: i64,
     pub name: String,
     pub kind: String,
+    pub build_doc_link: Option<String>,
     #[serde(with = "ts_seconds")]
     pub created_at: DateTime<Utc>,
     #[serde(with = "ts_seconds")]

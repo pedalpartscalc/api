@@ -13,6 +13,7 @@ pub fn pedal_rows_to_pedal(rows: std::vec::Vec<PedalPartRow>) -> Pedal {
         id: rows[0].id,
         name: rows[0].name.clone(),
         kind: rows[0].kind.clone(),
+        build_doc_link: rows[0].build_doc_link.clone(),
         created_at: rows[0].created_at,
         updated_at: rows[0].updated_at,
         required_parts: vec![],
@@ -36,7 +37,7 @@ pub fn pedal_rows_to_pedal(rows: std::vec::Vec<PedalPartRow>) -> Pedal {
 async fn get_pedal_by_id(id: i64, db_pool: web::Data<PgPool>) -> std::io::Result<Pedal> {
     let rows = sqlx::query_as!(
         PedalPartRow,
-        r#"SELECT pedals.id, pedals.name, pedals.kind, pedals.created_at, pedals.updated_at, required_parts.id AS "part_id?", required_parts.part_name as "part_name?", required_parts.part_kind as "part_kind?", required_parts.quantity as "part_quantity?"
+        r#"SELECT pedals.id, pedals.name, pedals.kind, pedals.build_doc_link, pedals.created_at, pedals.updated_at, required_parts.id AS "part_id?", required_parts.part_name as "part_name?", required_parts.part_kind as "part_kind?", required_parts.quantity as "part_quantity?"
             FROM pedals 
             LEFT OUTER JOIN required_parts 
                 ON pedals.id=required_parts.pedal_id 
@@ -53,7 +54,7 @@ async fn get_pedal_by_id(id: i64, db_pool: web::Data<PgPool>) -> std::io::Result
 async fn get_all_pedals(db_pool: web::Data<PgPool>) -> std::io::Result<std::vec::Vec<Pedal>> {
     let rows = sqlx::query_as!(
         PedalPartRow,
-        r#"SELECT pedals.id, pedals.name, pedals.kind, pedals.created_at, pedals.updated_at, required_parts.id AS "part_id?", required_parts.part_name as "part_name?", required_parts.part_kind as "part_kind?", required_parts.quantity as "part_quantity?"
+        r#"SELECT pedals.id, pedals.name, pedals.kind, pedals.build_doc_link, pedals.created_at, pedals.updated_at, required_parts.id AS "part_id?", required_parts.part_name as "part_name?", required_parts.part_kind as "part_kind?", required_parts.quantity as "part_quantity?"
             FROM pedals 
             LEFT OUTER JOIN required_parts 
                 ON pedals.id=required_parts.pedal_id
