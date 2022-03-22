@@ -55,4 +55,5 @@ pub struct Pedal {
 pub struct NewPedal {
     pub name: String,
     pub kind: String,
+    pub build_doc_link: Option<String>,
 }

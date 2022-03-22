@@ -127,9 +127,10 @@ pub async fn new_pedal(
     let new_pedal = new_pedal.into_inner();
     match sqlx::query_as!(
         Id,
-        r#"INSERT INTO pedals (name, kind) VALUES ($1, $2) RETURNING id"#,
+        r#"INSERT INTO pedals (name, kind, build_doc_link) VALUES ($1, $2, $3) RETURNING id"#,
         new_pedal.name,
-        new_pedal.kind
+        new_pedal.kind,
+        new_pedal.build_doc_link
     )
     .fetch_one(&**db_pool)
     .await {
@@ -147,9 +148,10 @@ pub async fn update_pedal(
 ) -> impl Responder {
     let update_pedal = pedal.into_inner();
     match sqlx::query!(
-        r#"UPDATE pedals SET name=$1, kind=$2 WHERE id=$3"#,
+        r#"UPDATE pedals SET name=$1, kind=$2, build_doc_link=$3 WHERE id=$4"#,
         update_pedal.name,
         update_pedal.kind,
+        update_pedal.build_doc_link,
         path.id
     )
     .execute(&**db_pool)
