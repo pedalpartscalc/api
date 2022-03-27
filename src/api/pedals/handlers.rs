@@ -5,8 +5,7 @@ use crate::extractors::Claims;
 use actix_web::{delete, get, post, put, web, HttpResponse, Responder};
 use sqlx::PgPool;
 use itertools::Itertools;
-
-// TODO: Make all of these hidden behind Admin access
+use std::collections::HashSet;
 
 pub fn pedal_rows_to_pedal(rows: std::vec::Vec<PedalPartRow>) -> Pedal {
     let mut pedal = Pedal {
@@ -180,11 +179,15 @@ pub async fn delete_pedal(
 
 #[post("/{id}/parts")]
 pub async fn create_required_part(
-    _claims: Claims,
+    claims: Claims,
     path: web::Path<Id>,
     required_part: web::Json<NewRequiredPart>,
     db_pool: web::Data<PgPool>,
 ) -> impl Responder {
+    if !claims.validate_permissions(&HashSet::from(["write:pedals".to_string()])) {
+        return Err(HttpResponse::Forbidden());
+    }
+
     let required_part = required_part.into_inner();
     match sqlx::query_as!(
         Id,
@@ -203,11 +206,15 @@ pub async fn create_required_part(
 
 #[put("/{id}/parts/{part_id}")]
 pub async fn update_required_part(
-    _claims: Claims,
+    claims: Claims,
     path: web::Path<(i64, i64)>,
     required_part: web::Json<NewRequiredPart>,
     db_pool: web::Data<PgPool>,
 ) -> impl Responder {
+    if !claims.validate_permissions(&HashSet::from(["write:pedals".to_string()])) {
+        return Err(HttpResponse::Forbidden());
+    }
+
     let (pedal_id, part_id) = path.into_inner();
     let required_part = required_part.into_inner();
     match sqlx::query!(
@@ -227,10 +234,14 @@ pub async fn update_required_part(
 
 #[delete("/{id}/parts/{part_id}")]
 pub async fn delete_required_part(
-    _claims: Claims,
+    claims: Claims,
     path: web::Path<(i64, i64)>,
     db_pool: web::Data<PgPool>,
 ) -> impl Responder {
+    if !claims.validate_permissions(&HashSet::from(["write:pedals".to_string()])) {
+        return Err(HttpResponse::Forbidden());
+    }
+
     let (pedal_id, part_id) = path.into_inner();
     match sqlx::query!(
         r#"DELETE FROM required_parts WHERE pedal_id=$1 AND id=$2"#,
