@@ -6,7 +6,7 @@ use sqlx::PgPool;
 #[get("")]
 pub async fn get_parts(claims: Claims, db_pool: web::Data<PgPool>) -> impl Responder {
     let owner_id: i64 = claims.owner_id(&**db_pool).await;
-    match sqlx::query_as!(
+    let mut parts = match sqlx::query_as!(
         AvailablePart,
         r#"SELECT * FROM available_parts WHERE owner_id=$1"#,
         owner_id
@@ -14,9 +14,11 @@ pub async fn get_parts(claims: Claims, db_pool: web::Data<PgPool>) -> impl Respo
     .fetch_all(&**db_pool)
     .await
     {
-        Ok(parts) => Ok(web::Json(parts)),
-        Err(_) => Err(HttpResponse::Forbidden()),
-    }
+        Ok(parts) => parts,
+        Err(_) => return Err(HttpResponse::Forbidden()),
+    };
+    parts.sort_by(|a, b| a.part_kind.to_lowercase().cmp(&b.part_kind.to_lowercase()));
+    Ok(web::Json(parts))
 }
 
 #[get("/{id}")]
