@@ -163,7 +163,7 @@ pub async fn update_pedal(
 
 #[delete("/{id}")]
 pub async fn delete_pedal(
-    _claimms: Claims,
+    _claims: Claims,
     path: web::Path<Id>,
     db_pool: web::Data<PgPool>,
 ) -> impl Responder {
