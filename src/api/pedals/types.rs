@@ -57,3 +57,11 @@ pub struct NewPedal {
     pub kind: String,
     pub build_doc_link: Option<String>,
 }
+
+#[derive(Debug, Serialize)]
+pub struct ClosePedal {
+    pub id: i64,
+    pub name: String,
+    pub kind: String,
+    pub short_parts: Vec<RequiredPart>
+}

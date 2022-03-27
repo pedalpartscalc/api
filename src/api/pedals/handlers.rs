@@ -1,4 +1,4 @@
-use super::types::{RequiredPart, NewRequiredPart, Pedal, PedalPartRow, NewPedal};
+use super::types::{RequiredPart, NewRequiredPart, Pedal, PedalPartRow, NewPedal, ClosePedal};
 use crate::api::parts::types::AvailablePart;
 use crate::types::Id;
 use crate::extractors::Claims;
@@ -95,6 +95,17 @@ pub fn remove_unavailable_pedals(pedals: &mut std::vec::Vec<Pedal>, available_pa
     });
 }
 
+async fn get_owners_parts(owner_id: i64, db_pool: &PgPool) -> std::vec::Vec<AvailablePart> {
+    sqlx::query_as!(
+        AvailablePart,
+        r#"SELECT * FROM available_parts WHERE owner_id=$1"#,
+        owner_id
+    )
+    .fetch_all(db_pool)
+    .await
+    .expect("Could not fetch parts")
+}
+
 #[get("/available")]
 pub async fn get_available_pedals(claims: Claims, db_pool: web::Data<PgPool>) -> impl Responder {
     let owner_id: i64 = claims.owner_id(&**db_pool).await;
@@ -114,7 +125,55 @@ pub async fn get_available_pedals(claims: Claims, db_pool: web::Data<PgPool>) ->
 
     remove_unavailable_pedals(&mut pedals, available_parts);
 
-    return Ok(web::Json(pedals));
+    Ok(web::Json(pedals))
+}
+
+fn find_closest_pedals(available_parts: &std::vec::Vec<AvailablePart>, pedals: &std::vec::Vec<Pedal>) -> std::vec::Vec<ClosePedal> {
+    let mut closest_pedals: std::vec::Vec<ClosePedal> = vec![];
+    for p in pedals {
+        let mut short_parts = vec![];
+        for rp in &p.required_parts {
+            let available_part = available_parts.iter().find(|ap| ap.part_name == rp.part_name && ap.part_kind == rp.part_kind);
+            if available_part.is_none() {
+                short_parts.push(rp.clone());
+            }
+            let available_part = available_part.unwrap();
+            if available_part.quantity >= rp.quantity {
+                continue;
+            }
+
+            short_parts.push(RequiredPart {
+                id: rp.id,
+                pedal_id: rp.pedal_id,
+                part_name: rp.part_name.clone(),
+                part_kind: rp.part_kind.clone(),
+                quantity: rp.quantity - available_part.quantity,
+            });
+        }
+        closest_pedals.push(ClosePedal {
+            id: p.id,
+            name: p.name.clone(),
+            kind: p.kind.clone(),
+            short_parts: short_parts,
+        });
+    }
+
+    // sort closest pedals by number of _unique_ parts needed still
+
+    closest_pedals
+}
+
+#[get("/closest")]
+pub async fn get_closest_available_pedals(claims: Claims, db_pool: web::Data<PgPool>) -> impl Responder {
+    let owner_id: i64 = claims.owner_id(&**db_pool).await;
+    let available_parts = get_owners_parts(owner_id, &**db_pool).await;
+
+    let pedals = match get_all_pedals(db_pool).await {
+        Ok(pedals) => pedals,
+        Err(_) => return Err(HttpResponse::NotFound()),
+    };
+
+    Ok(web::Json(find_closest_pedals(&available_parts, &pedals)))
 }
 
 #[post("")]
