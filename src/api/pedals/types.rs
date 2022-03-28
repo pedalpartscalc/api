@@ -63,5 +63,6 @@ pub struct ClosePedal {
     pub id: i64,
     pub name: String,
     pub kind: String,
-    pub short_parts: Vec<RequiredPart>
+    pub short_parts: Vec<RequiredPart>,
+    pub required_parts: Vec<RequiredPart>
 }

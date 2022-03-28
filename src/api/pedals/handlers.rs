@@ -158,6 +158,7 @@ fn find_closest_pedals(available_parts: &std::vec::Vec<AvailablePart>, pedals: &
                 name: p.name.clone(),
                 kind: p.kind.clone(),
                 short_parts: short_parts,
+                required_parts: p.required_parts.clone(),
             });
         }
     }
