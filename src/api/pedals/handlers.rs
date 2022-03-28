@@ -136,6 +136,7 @@ fn find_closest_pedals(available_parts: &std::vec::Vec<AvailablePart>, pedals: &
             let available_part = available_parts.iter().find(|ap| ap.part_name == rp.part_name && ap.part_kind == rp.part_kind);
             if available_part.is_none() {
                 short_parts.push(rp.clone());
+                continue;
             }
             let available_part = available_part.unwrap();
             if available_part.quantity >= rp.quantity {
@@ -150,15 +151,18 @@ fn find_closest_pedals(available_parts: &std::vec::Vec<AvailablePart>, pedals: &
                 quantity: rp.quantity - available_part.quantity,
             });
         }
-        closest_pedals.push(ClosePedal {
-            id: p.id,
-            name: p.name.clone(),
-            kind: p.kind.clone(),
-            short_parts: short_parts,
-        });
+        if short_parts.len() > 0 {
+            // only add pedals that still need parts
+            closest_pedals.push(ClosePedal {
+                id: p.id,
+                name: p.name.clone(),
+                kind: p.kind.clone(),
+                short_parts: short_parts,
+            });
+        }
     }
 
-    // sort closest pedals by number of _unique_ parts needed still
+    closest_pedals.sort_by(|a, b| a.short_parts.len().cmp(&b.short_parts.len()));
 
     closest_pedals
 }
