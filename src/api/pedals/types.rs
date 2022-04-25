@@ -3,12 +3,23 @@ use chrono::{DateTime, Utc};
 use chrono::serde::ts_seconds;
 
 #[derive(Debug, Serialize, Clone)]
+pub struct AlternatePart {
+    pub id: i64,
+    pub pedal_id: i64,
+    pub part_name: String,
+    pub part_kind: String,
+    pub quantity: i32,
+}
+
+#[derive(Debug, Serialize, Clone)]
 pub struct RequiredPart {
     pub id: i64,
     pub pedal_id: i64,
     pub part_name: String,
     pub part_kind: String,
     pub quantity: i32,
+
+    pub alternates: Vec<AlternatePart>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -35,6 +46,7 @@ pub struct PedalPartRow {
     pub part_name: Option<String>,
     pub part_kind: Option<String>,
     pub part_quantity: Option<i32>,
+    pub alternate_to: Option<i64>
 }
 
 #[derive(Debug, Serialize)]

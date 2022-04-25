@@ -1,4 +1,4 @@
-use super::types::{RequiredPart, NewRequiredPart, Pedal, PedalPartRow, NewPedal, ClosePedal};
+use super::types::{RequiredPart, NewRequiredPart, Pedal, PedalPartRow, NewPedal, ClosePedal, AlternatePart};
 use crate::api::parts::types::AvailablePart;
 use crate::types::Id;
 use crate::extractors::Claims;
@@ -7,7 +7,7 @@ use sqlx::PgPool;
 use itertools::Itertools;
 use std::collections::HashSet;
 
-pub fn pedal_rows_to_pedal(rows: std::vec::Vec<PedalPartRow>) -> Pedal {
+pub fn pedal_rows_to_pedal(rows: &std::vec::Vec<PedalPartRow>) -> Pedal {
     let mut pedal = Pedal {
         id: rows[0].id,
         name: rows[0].name.clone(),
@@ -18,14 +18,33 @@ pub fn pedal_rows_to_pedal(rows: std::vec::Vec<PedalPartRow>) -> Pedal {
         required_parts: vec![],
     };
     for row in rows {
-        if row.part_id.is_none() || row.part_name.is_none() || row.part_kind.is_none() || row.part_quantity.is_none() {
+        if row.part_id.is_none() || row.part_name.is_none() || row.part_kind.is_none() || row.part_quantity.is_none() || row.alternate_to.is_some() {
             continue;
         } 
         pedal.required_parts.push(RequiredPart {
             id: row.part_id.unwrap(),
             pedal_id: pedal.id,
-            part_name: row.part_name.unwrap().clone(),
-            part_kind: row.part_kind.unwrap().clone(),
+            part_name: row.part_name.as_ref().unwrap().clone(),
+            part_kind: row.part_kind.as_ref().unwrap().clone(),
+            quantity: row.part_quantity.unwrap(),
+            alternates: vec![],
+        });
+    }
+
+    for row in rows {
+        if row.alternate_to.is_none() {
+            continue;
+        }
+        let required_part = pedal.required_parts.iter_mut().find(|required_part| required_part.id == row.alternate_to.unwrap());
+        if required_part.is_none() {
+            // TODO: this should be an error case if we can't find the part
+            continue;
+        }
+        required_part.unwrap().alternates.push(AlternatePart {
+            id: row.id,
+            pedal_id: pedal.id,
+            part_name: row.part_name.as_ref().unwrap().clone(),
+            part_kind: row.part_kind.as_ref().unwrap().clone(),
             quantity: row.part_quantity.unwrap(),
         });
     }
@@ -36,7 +55,7 @@ pub fn pedal_rows_to_pedal(rows: std::vec::Vec<PedalPartRow>) -> Pedal {
 async fn get_pedal_by_id(id: i64, db_pool: web::Data<PgPool>) -> std::io::Result<Pedal> {
     let rows = sqlx::query_as!(
         PedalPartRow,
-        r#"SELECT pedals.id, pedals.name, pedals.kind, pedals.build_doc_link, pedals.created_at, pedals.updated_at, required_parts.id AS "part_id?", required_parts.part_name as "part_name?", required_parts.part_kind as "part_kind?", required_parts.quantity as "part_quantity?"
+        r#"SELECT pedals.id, pedals.name, pedals.kind, pedals.build_doc_link, pedals.created_at, pedals.updated_at, required_parts.id AS "part_id?", required_parts.part_name as "part_name?", required_parts.part_kind as "part_kind?", required_parts.quantity as "part_quantity?", required_parts.alternate_to as "alternate_to?"
             FROM pedals 
             LEFT OUTER JOIN required_parts 
                 ON pedals.id=required_parts.pedal_id 
@@ -47,13 +66,13 @@ async fn get_pedal_by_id(id: i64, db_pool: web::Data<PgPool>) -> std::io::Result
     .await
     .expect("Could not fetch pedal rows");
     
-    Ok(pedal_rows_to_pedal(rows))
+    Ok(pedal_rows_to_pedal(&rows))
 }
 
 async fn get_all_pedals(db_pool: web::Data<PgPool>) -> std::io::Result<std::vec::Vec<Pedal>> {
     let rows = sqlx::query_as!(
         PedalPartRow,
-        r#"SELECT pedals.id, pedals.name, pedals.kind, pedals.build_doc_link, pedals.created_at, pedals.updated_at, required_parts.id AS "part_id?", required_parts.part_name as "part_name?", required_parts.part_kind as "part_kind?", required_parts.quantity as "part_quantity?"
+        r#"SELECT pedals.id, pedals.name, pedals.kind, pedals.build_doc_link, pedals.created_at, pedals.updated_at, required_parts.id AS "part_id?", required_parts.part_name as "part_name?", required_parts.part_kind as "part_kind?", required_parts.quantity as "part_quantity?", required_parts.alternate_to as "alternate_to?"
             FROM pedals 
             LEFT OUTER JOIN required_parts 
                 ON pedals.id=required_parts.pedal_id
@@ -65,7 +84,8 @@ async fn get_all_pedals(db_pool: web::Data<PgPool>) -> std::io::Result<std::vec:
 
     let mut pedals: std::vec::Vec<Pedal> = vec![];
     for (_, group) in &rows.into_iter().group_by(|row| row.id) {
-        pedals.push(pedal_rows_to_pedal(group.into_iter().collect()));
+        let pedal_rows = group.into_iter().collect();
+        pedals.push(pedal_rows_to_pedal(&pedal_rows));
     }
     
     Ok(pedals)
@@ -149,6 +169,7 @@ fn find_closest_pedals(available_parts: &std::vec::Vec<AvailablePart>, pedals: &
                 part_name: rp.part_name.clone(),
                 part_kind: rp.part_kind.clone(),
                 quantity: rp.quantity - available_part.quantity,
+                alternates: vec![]
             });
         }
         if short_parts.len() > 0 {
